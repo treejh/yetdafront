@@ -4,13 +4,23 @@ const API_URL = (
   process.env.NEXT_PUBLIC_API_URL || "https://yetda.kro.kr"
 ).replace(/\/+$/, "");
 
+// 디버깅: 환경 변수 및 API URL 확인
+console.log("🔍 환경 변수 NEXT_PUBLIC_API_URL:", process.env.NEXT_PUBLIC_API_URL);
+console.log("🔗 최종 API_URL:", API_URL);
+
 export async function createPurchaseProject(formData: FormData) {
   try {
-    const res = await fetch(`${API_URL}/api/v1/project/purchase`, {
+    const fullUrl = `${API_URL}/api/v1/project/purchase`;
+    console.log("📡 실제 요청 URL:", fullUrl);
+    console.log("🌍 현재 환경:", typeof window !== 'undefined' ? 'browser' : 'server');
+    
+    const res = await fetch(fullUrl, {
       method: "POST",
       credentials: "include",
       body: formData,
     });
+
+    console.log("📊 응답 상태:", res.status, res.statusText);
 
     if (!res.ok) {
       throw new Error(`HTTP error! status: ${res.status}`);
@@ -26,69 +36,27 @@ export async function createPurchaseProject(formData: FormData) {
 
 export async function getSellProjectById(id: string): Promise<Project | null> {
   try {
-    console.log(`🔍 프로젝트 ID ${id} 조회 시작`);
-    const url = `${API_URL}/api/v1/project/${id}`;
-    console.log(`🔗 요청 URL: ${url}`);
-
-    const headers: Record<string, string> = {
-      "Content-Type": "application/json",
-    };
-
-    // 클라이언트에서 토큰 읽기
-    if (typeof window !== "undefined") {
-      const accessToken = localStorage.getItem("accessToken");
-      console.log(`🔑 Access Token 존재 여부: ${!!accessToken}`);
-      if (accessToken) {
-        headers["Authorization"] = `Bearer ${accessToken}`;
-        console.log(`🔐 Authorization 헤더 추가됨`);
-      }
-    }
-
-    const res = await fetch(url, {
+    const res = await fetch(`${API_URL}/api/v1/project/${id}`, {
       method: "GET",
       credentials: "include", // 쿠키를 포함하여 요청
-      headers,
+      headers: {
+        "Content-Type": "application/json",
+      },
     });
 
-    console.log(`📊 응답 상태: ${res.status} ${res.statusText}`);
-    console.log(`✅ 응답 성공 여부: ${res.ok}`);
-
     if (!res.ok) {
-      const errorText = await res.text();
-      console.error(`❌ 에러 응답 내용:`, errorText);
-
-      if (res.status === 404) {
-        console.warn(`🚫 프로젝트 ID ${id}를 찾을 수 없습니다 (404)`);
-        return null;
-      }
-      if (res.status === 401) {
-        console.warn(
-          `🔐 인증이 필요합니다 (401) - 로그인하거나 권한이 필요한 프로젝트입니다`,
-        );
-        return null;
-      }
-      if (res.status === 403) {
-        console.warn(`🚨 접근 권한이 없습니다 (403)`);
-        return null;
-      }
-
-      throw new Error(
-        `HTTP error! status: ${res.status}, message: ${errorText}`,
-      );
+      throw new Error(`HTTP error! status: ${res.status}`);
     }
 
     const data = await res.json();
-    console.log(`✅ 프로젝트 데이터 수신:`, data);
-
     const project: Project = {
       ...data.data,
       images: data.data.contentImageUrls || [],
     };
 
-    console.log(`🎯 최종 프로젝트 객체:`, project);
     return project;
   } catch (err) {
-    console.error(`💥 프로젝트 ID ${id} 조회 실패:`, err);
+    console.error("프로젝트 조회 실패:", err);
     return null;
   }
 }
