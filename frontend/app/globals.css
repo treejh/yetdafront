@@ -1,0 +1,81 @@
+@import "tailwindcss";
+@import "tw-animate-css";
+
+/* ───────── Color Variables ───────── */
+:root {
+  --primary: #1f9eff;
+  --secondary: #0064ff;
+  --gray: #f3f3f3;
+  --darkgray: #868e96;
+  --black: #000000;
+  --white: #ffffff;
+}
+
+/* ───────── Font Faces ───────── */
+@font-face {
+  font-family: "Pretendard-Regular";
+  src: url("https://fastly.jsdelivr.net/gh/Project-Noonnu/noonfonts_2107@1.1/Pretendard-Regular.woff")
+    format("woff");
+  font-weight: 400;
+  font-style: normal;
+}
+
+/* ───────── Body Base Style ───────── */
+body {
+  font-family: "Pretendard", "sans-serif";
+  background: var(--white);
+}
+
+*:focus {
+  outline: none;
+}
+
+/* ───────── Font Style ───────── */
+.text-xs {
+  font-size: 12px;
+}
+.text-sm {
+  font-size: 14px;
+}
+.text-md {
+  font-size: 16px;
+}
+.text-lg {
+  font-size: 20px;
+}
+.text-xl {
+  font-size: 24px;
+}
+.text-2xl {
+  font-size: 32px;
+}
+.text-md-navItem {
+  font-size: 16px;
+  font-weight: bold;
+}
+.text-badge {
+  font-size: 8px;
+  font-weight: bold;
+}
+.text-title {
+  font-size: 20px;
+  font-weight: bold;
+  color: var(--secondary);
+}
+
+/* ───────── Color Style ───────── */
+.bg-gray {
+  background-color: var(--gray);
+}
+.bg-darkgray {
+  background-color: var(--darkgray);
+}
+.bg-primary {
+  background-color: var(--primary);
+}
+.bg-secondary {
+  background-color: var(--secondary);
+}
+.bg-white {
+  background-color: var(--white);
+}

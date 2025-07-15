@@ -1,0 +1,28 @@
+# Node modules
+node_modules
+
+# Next.js build output
+.next
+out
+
+# Build artifacts
+dist
+build
+
+# ESLint cache
+.eslintcache
+
+# Config files (prevent parsing errors)
+.eslintrc.*
+postcss.config.*
+tailwind.config.*
+next.config.*
+components.json
+
+# IDE/editor settings (optional)
+.vscode/
+.idea/
+
+# Environment variables
+.env
+.env.*
