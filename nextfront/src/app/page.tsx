@@ -14,12 +14,29 @@ export default function Home() {
   const [sortType, setSortType] = useState<
     "LIKE" | "ACHIVEMENT_RATE" | "SELLING_AMOUNT"
   >("LIKE");
+  const [currentPage, setCurrentPage] = useState(0);
 
-  const { projects, loading, error } = useProjects({
+  const { projects, loading, error, totalElements } = useProjects({
     projectType: selectedTab,
     sortType: sortType,
+    page: currentPage,
     size: 8,
   });
+
+  const totalPages = Math.ceil(totalElements / 8);
+
+  // 필터나 정렬이 변경되면 첫 페이지로 이동
+  const handleTabChange = (tab: "ALL" | "BOOK" | "WEB" | "APP") => {
+    setSelectedTab(tab);
+    setCurrentPage(0);
+  };
+
+  const handleSortChange = (
+    sort: "LIKE" | "ACHIVEMENT_RATE" | "SELLING_AMOUNT"
+  ) => {
+    setSortType(sort);
+    setCurrentPage(0);
+  };
 
   const handleLogout = () => {
     logout(() => {
@@ -57,6 +74,12 @@ export default function Home() {
                   </span>
                 </div>
                 <Link
+                  href="/project/create"
+                  className="text-green-600 hover:text-green-800 font-medium px-4 py-2 rounded-lg hover:bg-green-50 transition-all duration-200"
+                >
+                  프로젝트 생성
+                </Link>
+                <Link
                   href="/mypage"
                   className="text-blue-600 hover:text-blue-800 font-medium px-4 py-2 rounded-lg hover:bg-blue-50 transition-all duration-200"
                 >
@@ -85,51 +108,92 @@ export default function Home() {
       <div className="container mx-auto px-4 py-8">
         <main className="flex flex-col gap-[32px] items-center pt-20">
           {/* 히어로 섹션 */}
-          <div className="text-center mb-16 max-w-4xl mx-auto">
-            <h1 className="text-5xl font-bold bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent mb-6">
-              YEDDA
-            </h1>
-            <p className="text-xl text-gray-600 mb-8 leading-relaxed">
-              창의적인 프로젝트를 발견하고 공유하는 플랫폼
-            </p>
-            <div className="flex justify-center gap-4 mb-8">
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-gray-200/50">
-                <svg
-                  className="w-5 h-5 text-blue-500 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
-                </svg>
+          <div className="relative text-center mb-20 max-w-6xl mx-auto">
+            {/* 배경 장식 요소 */}
+            <div className="absolute -top-10 -left-10 w-72 h-72 bg-gradient-to-br from-blue-200/30 to-purple-200/30 rounded-full blur-3xl"></div>
+            <div className="absolute -bottom-10 -right-10 w-96 h-96 bg-gradient-to-br from-pink-200/30 to-orange-200/30 rounded-full blur-3xl"></div>
+
+            <div className="relative z-10">
+              <div className="inline-flex items-center gap-3 bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-gray-200/50 mb-8">
+                <div className="w-3 h-3 bg-green-500 rounded-full animate-pulse"></div>
                 <span className="text-sm font-medium text-gray-700">
-                  인기 프로젝트
+                  크라우드 펀딩 플랫폼
                 </span>
               </div>
-              <div className="flex items-center bg-white/80 backdrop-blur-sm rounded-full px-6 py-3 shadow-lg border border-gray-200/50">
-                <svg
-                  className="w-5 h-5 text-green-500 mr-2"
-                  fill="currentColor"
-                  viewBox="0 0 20 20"
-                >
-                  <path
-                    fillRule="evenodd"
-                    d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z"
-                    clipRule="evenodd"
-                  />
-                </svg>
-                <span className="text-sm font-medium text-gray-700">
-                  검증된 품질
+
+              <h1 className="text-6xl font-bold mb-6">
+                <span className="bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+                  YEDDA
                 </span>
+              </h1>
+
+              <p className="text-2xl text-gray-700 mb-4 font-light">
+                창의적인 프로젝트를 발견하고 지원하는
+              </p>
+              <p className="text-xl text-gray-600 mb-12 leading-relaxed">
+                아이디어를 현실로 만드는 크라우드 펀딩 플랫폼
+              </p>
+
+              {!isLogin && (
+                <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+                  <Link
+                    href="/login"
+                    className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-4 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-semibold text-lg"
+                  >
+                    지금 시작하기 →
+                  </Link>
+                  <div className="text-sm text-gray-500">
+                    이미 계정이 있으신가요?{" "}
+                    <Link
+                      href="/login"
+                      className="text-blue-600 hover:underline font-medium"
+                    >
+                      로그인
+                    </Link>
+                  </div>
+                </div>
+              )}
+
+              {/* 통계 카드들 */}
+              <div className="grid grid-cols-1 sm:grid-cols-3 gap-6 max-w-3xl mx-auto">
+                <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                  <div className="text-3xl font-bold text-blue-600 mb-2">
+                    500+
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    성공한 프로젝트
+                  </div>
+                </div>
+                <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                  <div className="text-3xl font-bold text-green-600 mb-2">
+                    1.2M+
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    누적 펀딩 금액
+                  </div>
+                </div>
+                <div className="bg-white/60 backdrop-blur-sm rounded-2xl p-6 shadow-lg border border-gray-200/50">
+                  <div className="text-3xl font-bold text-purple-600 mb-2">
+                    10K+
+                  </div>
+                  <div className="text-sm text-gray-600 font-medium">
+                    활성 사용자
+                  </div>
+                </div>
               </div>
             </div>
           </div>
 
           {isLogin && (
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 border-2 border-green-200 rounded-2xl p-6 mb-8 shadow-lg w-full max-w-4xl">
-              <div className="flex items-center">
-                <div className="w-16 h-16 bg-gradient-to-br from-green-400 to-emerald-500 rounded-full flex items-center justify-center mr-4">
+            <div className="relative overflow-hidden bg-gradient-to-r from-emerald-50 via-green-50 to-teal-50 border-2 border-green-200/50 rounded-3xl p-8 mb-16 shadow-xl w-full max-w-5xl">
+              {/* 배경 패턴 */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-gradient-to-br from-green-200/20 to-emerald-300/20 rounded-full -translate-y-16 translate-x-16"></div>
+              <div className="absolute bottom-0 left-0 w-24 h-24 bg-gradient-to-tr from-teal-200/20 to-green-300/20 rounded-full translate-y-12 -translate-x-12"></div>
+
+              <div className="relative z-10 flex items-center">
+                <div className="w-20 h-20 bg-gradient-to-br from-green-400 to-emerald-500 rounded-2xl flex items-center justify-center mr-6 shadow-lg">
                   <svg
-                    className="w-8 h-8 text-white"
+                    className="w-10 h-10 text-white"
                     fill="none"
                     stroke="currentColor"
                     viewBox="0 0 24 24"
@@ -137,81 +201,118 @@ export default function Home() {
                     <path
                       strokeLinecap="round"
                       strokeLinejoin="round"
-                      strokeWidth={2}
+                      strokeWidth={2.5}
                       d="M5 13l4 4L19 7"
                     />
                   </svg>
                 </div>
                 <div className="flex-1">
-                  <h2 className="text-xl font-bold text-green-800 mb-1">
-                    환영합니다! 🎉
-                  </h2>
-                  <p className="text-green-700">
-                    {loginUser.name}님이 성공적으로 로그인하셨습니다.
+                  <div className="flex items-center gap-3 mb-2">
+                    <h2 className="text-2xl font-bold text-green-800">
+                      환영합니다! 🎉
+                    </h2>
+                    <div className="px-3 py-1 bg-green-500/20 text-green-700 text-xs font-medium rounded-full">
+                      프리미엄 멤버
+                    </div>
+                  </div>
+                  <p className="text-green-700 text-lg mb-4">
+                    {loginUser.name}님, 오늘도 멋진 프로젝트를 만나보세요!
                   </p>
+                  <div className="flex items-center gap-6 text-sm text-green-600">
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                      <span>새로운 프로젝트 알림</span>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span>맞춤 추천 준비완료</span>
+                    </div>
+                  </div>
                 </div>
-                <Link
-                  href="/mypage"
-                  className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-6 py-3 rounded-xl hover:from-green-600 hover:to-emerald-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
-                >
-                  마이페이지 →
-                </Link>
+                <div className="flex gap-3">
+                  <Link
+                    href="/project/create"
+                    className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-xl hover:from-blue-600 hover:to-purple-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium"
+                  >
+                    📝 프로젝트 생성
+                  </Link>
+                  <Link
+                    href="/mypage"
+                    className="bg-white/80 backdrop-blur-sm text-green-700 px-6 py-3 rounded-xl hover:bg-white transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium border border-green-200"
+                  >
+                    마이페이지 →
+                  </Link>
+                </div>
               </div>
             </div>
           )}
 
           {/* 프로젝트 섹션 */}
           <div className="w-full max-w-7xl mx-auto">
-            <div className="text-center mb-12">
-              <h2 className="text-3xl font-bold text-gray-800 mb-4">
-                인기 프로젝트
+            <div className="text-center mb-16">
+              <div className="inline-flex items-center gap-2 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 px-4 py-2 rounded-full text-sm font-medium mb-6">
+                <svg
+                  className="w-4 h-4"
+                  fill="currentColor"
+                  viewBox="0 0 20 20"
+                >
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+                인기 프로젝트 모음
+              </div>
+              <h2 className="text-4xl font-bold text-gray-800 mb-6">
+                지금
+                <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
+                  HOT
+                </span>
+                한 프로젝트
               </h2>
-              <p className="text-gray-600">
-                커뮤니티에서 가장 사랑받는 프로젝트들을 만나보세요
+              <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                커뮤니티에서 가장 사랑받는 혁신적인 프로젝트들을 만나보세요
               </p>
             </div>
 
-            {/* 필터 탭 */}
-            <div className="flex flex-wrap justify-center gap-4 mb-8">
-              <div className="flex bg-white rounded-xl p-2 shadow-lg border border-gray-200/50">
-                {(["ALL"] as const).map((tab) => (
+            {/* 개선된 필터 탭 */}
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center mb-12">
+              <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border border-gray-200/50">
+                {(["ALL", "BOOK", "WEB", "APP"] as const).map((tab) => (
                   <button
                     key={tab}
-                    onClick={() => setSelectedTab(tab)}
-                    className={`px-6 py-2 rounded-lg font-medium transition-all duration-300 ${
+                    onClick={() => handleTabChange(tab)}
+                    className={`px-6 py-3 rounded-xl font-semibold transition-all duration-300 ${
                       selectedTab === tab
-                        ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg"
-                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                        ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white shadow-lg transform scale-105"
+                        : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80"
                     }`}
                   >
                     {tab === "ALL"
-                      ? "전체"
+                      ? "🌟 전체"
                       : tab === "BOOK"
-                      ? "북"
+                      ? "📚 북"
                       : tab === "WEB"
-                      ? "웹"
-                      : "앱"}
+                      ? "💻 웹"
+                      : "📱 앱"}
                   </button>
                 ))}
               </div>
 
-              <div className="flex bg-white rounded-xl p-2 shadow-lg border border-gray-200/50">
+              <div className="flex bg-white/80 backdrop-blur-sm rounded-2xl p-2 shadow-xl border border-gray-200/50">
                 {(["LIKE", "ACHIVEMENT_RATE", "SELLING_AMOUNT"] as const).map(
                   (sort) => (
                     <button
                       key={sort}
-                      onClick={() => setSortType(sort)}
-                      className={`px-4 py-2 rounded-lg font-medium transition-all duration-300 text-sm ${
+                      onClick={() => handleSortChange(sort)}
+                      className={`px-5 py-3 rounded-xl font-semibold transition-all duration-300 text-sm ${
                         sortType === sort
-                          ? "bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg"
-                          : "text-gray-600 hover:text-gray-800 hover:bg-gray-50"
+                          ? "bg-gradient-to-r from-pink-500 to-red-500 text-white shadow-lg transform scale-105"
+                          : "text-gray-600 hover:text-gray-800 hover:bg-gray-50/80"
                       }`}
                     >
                       {sort === "LIKE"
-                        ? "좋아요순"
+                        ? "❤️ 좋아요순"
                         : sort === "ACHIVEMENT_RATE"
-                        ? "달성률순"
-                        : "금액순"}
+                        ? "🎯 달성률순"
+                        : "💰 금액순"}
                     </button>
                   )
                 )}
@@ -277,76 +378,123 @@ export default function Home() {
                 <p className="text-gray-600">아직 등록된 프로젝트가 없어요</p>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
                 {projects &&
                   projects.map((project) => (
                     <div
                       key={project.id}
-                      className="group bg-white rounded-2xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 transform hover:-translate-y-2"
+                      className="group relative bg-white/90 rounded-3xl p-6 shadow-lg border border-gray-200/50 hover:shadow-xl transition-all duration-300 will-change-transform hover:translate-y-[-8px] hover:scale-[1.02]"
+                      style={{
+                        transform: "translateZ(0)",
+                        contain: "layout style paint",
+                      }}
                     >
                       {/* 프로젝트 이미지 */}
-                      <div className="w-full h-48 bg-gradient-to-br from-blue-100 to-purple-100 rounded-xl mb-4 overflow-hidden relative">
+                      <div className="relative w-full h-52 bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 rounded-2xl mb-6 overflow-hidden">
                         {project.thumbnail ? (
                           <img
                             src={project.thumbnail}
                             alt={project.title}
-                            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-300"
+                            className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300"
+                            style={{ transform: "translateZ(0)" }}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <svg
-                              className="w-12 h-12 text-gray-400"
-                              fill="none"
-                              stroke="currentColor"
-                              viewBox="0 0 24 24"
-                            >
-                              <path
-                                strokeLinecap="round"
-                                strokeLinejoin="round"
-                                strokeWidth={2}
-                                d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
-                              />
-                            </svg>
+                            <div className="w-16 h-16 bg-gradient-to-br from-blue-400 to-purple-500 rounded-2xl flex items-center justify-center">
+                              <svg
+                                className="w-8 h-8 text-white"
+                                fill="none"
+                                stroke="currentColor"
+                                viewBox="0 0 24 24"
+                              >
+                                <path
+                                  strokeLinecap="round"
+                                  strokeLinejoin="round"
+                                  strokeWidth={2}
+                                  d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"
+                                />
+                              </svg>
+                            </div>
                           </div>
                         )}
-                        <div className="absolute top-3 right-3">
-                          <div className="bg-white/90 backdrop-blur-sm rounded-full px-3 py-1 text-xs font-medium text-gray-700">
+
+                        {/* 오버레이 그라데이션 */}
+                        <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-200"></div>
+
+                        {/* 프로젝트 ID 뱃지 */}
+                        <div className="absolute top-4 right-4">
+                          <div className="bg-white/95 rounded-full px-3 py-1 text-xs font-bold text-gray-700 shadow-md">
                             #{project.id}
+                          </div>
+                        </div>
+
+                        {/* 프로젝트 타입 뱃지 */}
+                        <div className="absolute top-4 left-4">
+                          <div className="bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-full px-3 py-1 text-xs font-bold shadow-md">
+                            {project.projectType}
                           </div>
                         </div>
                       </div>
 
                       {/* 프로젝트 정보 */}
-                      <div className="space-y-3">
-                        <h3 className="font-bold text-gray-800 text-lg line-clamp-2 group-hover:text-blue-600 transition-colors">
+                      <div className="space-y-4">
+                        <h3 className="font-bold text-gray-800 text-xl line-clamp-2 group-hover:text-blue-600 transition-colors duration-300">
                           {project.title}
                         </h3>
-                        <p className="text-gray-600 text-sm line-clamp-3">
-                          {project.introduce || "프로젝트 설명이 없습니다."}
+
+                        <p className="text-gray-600 text-sm line-clamp-3 leading-relaxed">
+                          {project.introduce ||
+                            "혁신적인 아이디어로 세상을 바꿔나가는 프로젝트입니다."}
                         </p>
 
                         {/* 작성자 */}
-                        <div className="flex items-center text-sm text-gray-500">
-                          <svg
-                            className="w-4 h-4 mr-1"
-                            fill="currentColor"
-                            viewBox="0 0 20 20"
-                          >
-                            <path
-                              fillRule="evenodd"
-                              d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
-                              clipRule="evenodd"
-                            />
-                          </svg>
-                          {project.hostName}
+                        <div className="flex items-center gap-2 text-sm text-gray-500">
+                          <div className="w-8 h-8 bg-gradient-to-br from-gray-200 to-gray-300 rounded-full flex items-center justify-center">
+                            <svg
+                              className="w-4 h-4 text-gray-600"
+                              fill="currentColor"
+                              viewBox="0 0 20 20"
+                            >
+                              <path
+                                fillRule="evenodd"
+                                d="M10 9a3 3 0 100-6 3 3 0 000 6zm-7 9a7 7 0 1114 0H3z"
+                                clipRule="evenodd"
+                              />
+                            </svg>
+                          </div>
+                          <span className="font-medium">
+                            {project.hostName}
+                          </span>
+                        </div>
+
+                        {/* 진행률 바 */}
+                        <div className="space-y-2">
+                          <div className="flex justify-between text-sm">
+                            <span className="text-gray-600">달성률</span>
+                            <span className="font-bold text-blue-600">
+                              {project.achievementRate}%
+                            </span>
+                          </div>
+                          <div className="w-full bg-gray-200 rounded-full h-2 overflow-hidden">
+                            <div
+                              className="h-full bg-gradient-to-r from-blue-500 to-purple-500 rounded-full transition-all duration-300 ease-out"
+                              style={{
+                                width: `${Math.min(
+                                  project.achievementRate,
+                                  100
+                                )}%`,
+                                transform: "translateZ(0)",
+                              }}
+                            ></div>
+                          </div>
                         </div>
 
                         {/* 통계 */}
-                        <div className="flex items-center justify-between text-sm">
-                          <div className="flex items-center space-x-4">
-                            <div className="flex items-center text-red-500">
+                        <div className="flex items-center justify-between">
+                          <div className="flex items-center gap-4">
+                            <div className="flex items-center gap-1 text-red-500">
                               <svg
-                                className="w-4 h-4 mr-1"
+                                className="w-4 h-4"
                                 fill="currentColor"
                                 viewBox="0 0 20 20"
                               >
@@ -356,28 +504,15 @@ export default function Home() {
                                   clipRule="evenodd"
                                 />
                               </svg>
-                              {project.projectLikeCount}
+                              <span className="text-sm font-medium">
+                                {project.projectLikeCount}
+                              </span>
                             </div>
-                            <div className="flex items-center text-green-500">
-                              <svg
-                                className="w-4 h-4 mr-1"
-                                fill="none"
-                                stroke="currentColor"
-                                viewBox="0 0 24 24"
-                              >
-                                <path
-                                  strokeLinecap="round"
-                                  strokeLinejoin="round"
-                                  strokeWidth={2}
-                                  d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
-                                />
-                              </svg>
-                              {project.achievementRate}%
-                            </div>
+
                             {project.sellingAmount > 0 && (
-                              <div className="flex items-center text-blue-500">
+                              <div className="flex items-center gap-1 text-green-500">
                                 <svg
-                                  className="w-4 h-4 mr-1"
+                                  className="w-4 h-4"
                                   fill="none"
                                   stroke="currentColor"
                                   viewBox="0 0 24 24"
@@ -389,10 +524,13 @@ export default function Home() {
                                     d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
                                   />
                                 </svg>
-                                {project.sellingAmount.toLocaleString()}원
+                                <span className="text-sm font-medium">
+                                  {project.sellingAmount.toLocaleString()}원
+                                </span>
                               </div>
                             )}
                           </div>
+
                           <div className="text-gray-400 text-xs">
                             {project.projectEndDate
                               ? new Date(
@@ -402,88 +540,216 @@ export default function Home() {
                           </div>
                         </div>
 
-                        {/* 프로젝트 타입 태그 */}
-                        <div className="flex flex-wrap gap-2">
-                          <span className="px-2 py-1 bg-gradient-to-r from-blue-100 to-purple-100 text-blue-700 text-xs rounded-full">
-                            #{project.projectType}
-                          </span>
+                        {/* 호버 시 나타나는 버튼 */}
+                        <div className="opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                          <Link
+                            href={`/project/${project.id}`}
+                            className="block w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white py-3 rounded-xl font-semibold hover:from-blue-600 hover:to-purple-600 transition-colors duration-200 shadow-md text-center"
+                          >
+                            자세히 보기 →
+                          </Link>
                         </div>
                       </div>
+
+                      {/* 카드 테두리 그라데이션 효과 제거 - 성능 최적화 */}
                     </div>
                   ))}
               </div>
             )}
 
-            {/* 더보기 버튼 */}
-            {projects && projects.length > 0 && (
-              <div className="text-center mt-12">
-                <button className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl hover:from-blue-700 hover:to-purple-700 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl font-medium">
-                  더 많은 프로젝트 보기
-                </button>
+            {/* 페이지네이션 */}
+            {projects && projects.length > 0 && totalPages > 1 && (
+              <div className="flex flex-col items-center mt-16 space-y-6">
+                <div className="flex items-center space-x-3">
+                  {/* 이전 페이지 버튼 */}
+                  <button
+                    onClick={() => setCurrentPage(Math.max(0, currentPage - 1))}
+                    disabled={currentPage === 0}
+                    className="flex items-center justify-center w-12 h-12 rounded-xl border-2 border-gray-300 text-gray-600 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:text-white hover:border-transparent disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600 disabled:hover:border-gray-300 transition-colors duration-200"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 19l-7-7 7-7"
+                      />
+                    </svg>
+                  </button>
+
+                  {/* 페이지 번호들 */}
+                  <div className="flex items-center space-x-2">
+                    {(() => {
+                      const maxVisiblePages = 5;
+                      let startPage = Math.max(
+                        0,
+                        currentPage - Math.floor(maxVisiblePages / 2)
+                      );
+                      let endPage = Math.min(
+                        totalPages - 1,
+                        startPage + maxVisiblePages - 1
+                      );
+
+                      if (endPage - startPage < maxVisiblePages - 1) {
+                        startPage = Math.max(0, endPage - maxVisiblePages + 1);
+                      }
+
+                      const pages = [];
+
+                      // 첫 페이지가 표시되지 않으면 추가
+                      if (startPage > 0) {
+                        pages.push(
+                          <button
+                            key={0}
+                            onClick={() => setCurrentPage(0)}
+                            className="w-12 h-12 rounded-xl border-2 border-gray-300 text-gray-600 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:text-white hover:border-transparent transition-colors duration-200 font-semibold"
+                          >
+                            1
+                          </button>
+                        );
+                        if (startPage > 1) {
+                          pages.push(
+                            <span
+                              key="ellipsis1"
+                              className="px-2 text-gray-400 font-bold"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                      }
+
+                      // 현재 범위의 페이지들
+                      for (let i = startPage; i <= endPage; i++) {
+                        pages.push(
+                          <button
+                            key={i}
+                            onClick={() => setCurrentPage(i)}
+                            className={`w-12 h-12 rounded-xl border-2 transition-colors duration-200 font-semibold ${
+                              currentPage === i
+                                ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white border-transparent shadow-lg"
+                                : "border-gray-300 text-gray-600 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:text-white hover:border-transparent"
+                            }`}
+                          >
+                            {i + 1}
+                          </button>
+                        );
+                      }
+
+                      // 마지막 페이지가 표시되지 않으면 추가
+                      if (endPage < totalPages - 1) {
+                        if (endPage < totalPages - 2) {
+                          pages.push(
+                            <span
+                              key="ellipsis2"
+                              className="px-2 text-gray-400 font-bold"
+                            >
+                              ...
+                            </span>
+                          );
+                        }
+                        pages.push(
+                          <button
+                            key={totalPages - 1}
+                            onClick={() => setCurrentPage(totalPages - 1)}
+                            className="w-12 h-12 rounded-xl border-2 border-gray-300 text-gray-600 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:text-white hover:border-transparent transition-colors duration-200 font-semibold"
+                          >
+                            {totalPages}
+                          </button>
+                        );
+                      }
+
+                      return pages;
+                    })()}
+                  </div>
+
+                  {/* 다음 페이지 버튼 */}
+                  <button
+                    onClick={() =>
+                      setCurrentPage(Math.min(totalPages - 1, currentPage + 1))
+                    }
+                    disabled={currentPage === totalPages - 1}
+                    className="flex items-center justify-center w-12 h-12 rounded-xl border-2 border-gray-300 text-gray-600 hover:bg-gradient-to-r hover:from-blue-500 hover:to-purple-500 hover:text-white hover:border-transparent disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:bg-transparent disabled:hover:text-gray-600 disabled:hover:border-gray-300 transition-colors duration-200"
+                  >
+                    <svg
+                      className="w-5 h-5"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M9 5l7 7-7 7"
+                      />
+                    </svg>
+                  </button>
+                </div>
+
+                {/* 페이지 정보 */}
+                <div className="bg-white/80 rounded-2xl px-6 py-3 shadow-md border border-gray-200/50">
+                  <span className="text-sm font-medium text-gray-700">
+                    {currentPage * 8 + 1}-
+                    {Math.min((currentPage + 1) * 8, totalElements)} /{" "}
+                    {totalElements}개 프로젝트
+                  </span>
+                </div>
               </div>
             )}
           </div>
 
-          <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-            <li className="mb-2 tracking-[-.01em]">
-              Get started by editing{" "}
-              <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-                src/app/page.tsx
-              </code>
-              .
-            </li>
-            <li className="tracking-[-.01em]">
-              Save and see your changes instantly.
-            </li>
-          </ol>
-
           {/* 푸터 */}
-          <footer className="flex gap-[24px] flex-wrap items-center justify-center py-8">
-            <a
-              className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                aria-hidden
-                src="/file.svg"
-                alt="File icon"
-                width={16}
-                height={16}
-              />
-              Learn
-            </a>
-            <a
-              className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                aria-hidden
-                src="/window.svg"
-                alt="Window icon"
-                width={16}
-                height={16}
-              />
-              Examples
-            </a>
-            <a
-              className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-              href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <Image
-                aria-hidden
-                src="/globe.svg"
-                alt="Globe icon"
-                width={16}
-                height={16}
-              />
-              Go to nextjs.org →
-            </a>
+          <footer className="mt-20 text-center py-12 border-t border-gray-200/50">
+            <div className="max-w-4xl mx-auto">
+              <div className="mb-8">
+                <Link
+                  href="/"
+                  className="text-3xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent"
+                >
+                  📚 YEDDA
+                </Link>
+                <p className="text-gray-600 mt-2">
+                  혁신적인 아이디어를 현실로 만드는 크라우드 펀딩 플랫폼
+                </p>
+              </div>
+
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-8 mb-8">
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-3">서비스</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>프로젝트 탐색</div>
+                    <div>펀딩 참여</div>
+                    <div>프로젝트 생성</div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-3">지원</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>고객센터</div>
+                    <div>이용가이드</div>
+                    <div>FAQ</div>
+                  </div>
+                </div>
+                <div>
+                  <h4 className="font-semibold text-gray-800 mb-3">회사</h4>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <div>회사소개</div>
+                    <div>이용약관</div>
+                    <div>개인정보처리방침</div>
+                  </div>
+                </div>
+              </div>
+
+              <div className="text-sm text-gray-500 border-t border-gray-200/50 pt-6">
+                © 2024 YEDDA. All rights reserved.
+              </div>
+            </div>
           </footer>
         </main>
       </div>
