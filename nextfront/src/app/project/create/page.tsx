@@ -194,6 +194,7 @@ export default function CreateProjectPage() {
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/project/purchase`,
         {
           method: "POST",
+          credentials: "include", // 쿠키 포함
           headers: {
             Authorization: `Bearer ${token}`,
             accept: "application/json",
