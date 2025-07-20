@@ -169,25 +169,45 @@ export default function CreateProjectPage() {
     try {
       const formDataToSend = new FormData();
 
-      // JSON 데이터 준비
+      // JSON 데이터 준비 (contentImage 필드 제거)
       const requestDto = {
-        ...formData,
-        contentImage: contentImages.map((_, index) => `image_${index}`),
+        projectType: formData.projectType,
+        title: formData.title,
+        introduce: formData.introduce,
+        content: formData.content,
+        field: formData.field,
+        pricingPlanId: formData.pricingPlanId,
+        purchaseDetail: {
+          gitAddress: formData.purchaseDetail.gitAddress,
+          purchaseCategoryId: formData.purchaseDetail.purchaseCategoryId,
+          getAverageDeliveryTime:
+            formData.purchaseDetail.getAverageDeliveryTime,
+          purchaseOptionList: formData.purchaseDetail.purchaseOptionList,
+        },
       };
 
+      console.log("전송할 JSON 데이터:", requestDto);
       formDataToSend.append("requestDto", JSON.stringify(requestDto));
 
       // 이미지 파일들 추가
-      contentImages.forEach((file) => {
+      contentImages.forEach((file, index) => {
+        console.log(`contentImage ${index}:`, file.name);
         formDataToSend.append("contentImage", file);
       });
 
       // DOWNLOAD 옵션의 파일들만 추가
       optionFiles.forEach((file, index) => {
         if (file) {
+          console.log(`optionFile ${index}:`, file.name);
           formDataToSend.append("optionFiles", file);
         }
       });
+
+      // FormData 내용 확인 (디버깅용)
+      console.log("=== FormData 내용 ===");
+      for (let [key, value] of formDataToSend.entries()) {
+        console.log(`${key}:`, value);
+      }
 
       const token = localStorage.getItem("accessToken");
       const response = await fetch(
@@ -196,6 +216,7 @@ export default function CreateProjectPage() {
           method: "POST",
           credentials: "include", // 쿠키 포함
           headers: {
+            // Content-Type을 제거하여 브라우저가 자동으로 multipart/form-data로 설정하도록 함
             Authorization: `Bearer ${token}`,
             accept: "application/json",
           },
@@ -203,12 +224,23 @@ export default function CreateProjectPage() {
         }
       );
 
+      console.log("응답 상태:", response.status);
+      console.log("응답 헤더:", response.headers);
+
       if (response.ok) {
+        const result = await response.json();
+        console.log("성공 응답:", result);
         alert("프로젝트가 성공적으로 생성되었습니다!");
         router.push("/");
       } else {
-        const errorData = await response.json();
-        throw new Error(errorData.message || "프로젝트 생성에 실패했습니다.");
+        const errorText = await response.text();
+        console.error("오류 응답:", errorText);
+        try {
+          const errorData = JSON.parse(errorText);
+          throw new Error(errorData.message || "프로젝트 생성에 실패했습니다.");
+        } catch {
+          throw new Error(`서버 오류 (${response.status}): ${errorText}`);
+        }
       }
     } catch (error) {
       console.error("프로젝트 생성 오류:", error);

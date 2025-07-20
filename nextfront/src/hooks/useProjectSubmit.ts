@@ -36,10 +36,32 @@ export const useProjectSubmit = () => {
       });
 
       const token = localStorage.getItem("accessToken");
+
+      // 토큰 유효성 검사
+      if (
+        !token ||
+        token.trim() === "" ||
+        token === "null" ||
+        token === "undefined"
+      ) {
+        throw new Error("로그인이 필요합니다. 다시 로그인해주세요.");
+      }
+
+      // JWT 형식 기본 검증 (3개 부분으로 구성되어야 함)
+      const tokenParts = token.split(".");
+      if (tokenParts.length !== 3) {
+        console.error("잘못된 JWT 토큰 형식:", token);
+        localStorage.removeItem("accessToken"); // 잘못된 토큰 제거
+        throw new Error("토큰이 유효하지 않습니다. 다시 로그인해주세요.");
+      }
+
+      console.log("사용할 토큰:", token.substring(0, 20) + "...");
+
       const response = await fetch(
         `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/project/purchase`,
         {
           method: "POST",
+          credentials: "include", // 쿠키 포함
           headers: {
             Authorization: `Bearer ${token}`,
             accept: "application/json",

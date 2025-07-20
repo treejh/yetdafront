@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState, useCallback } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
@@ -19,6 +19,7 @@ export default function MyPage() {
     account: "",
   });
   const [isSaving, setIsSaving] = useState(false);
+  const hasInitialized = useRef(false);
 
   // 디버깅을 위한 useEffect 추가 (개발 환경에서만)
   useEffect(() => {
@@ -34,13 +35,24 @@ export default function MyPage() {
   }, [isEditing]);
 
   useEffect(() => {
-    if (!isLogin) {
-      router.push("/login");
+    console.log("MyPage useEffect 실행됨", {
+      isLogin,
+      hasInitialized: hasInitialized.current,
+    });
+
+    // 이미 초기화되었거나 로그인되지 않은 경우
+    if (hasInitialized.current || !isLogin) {
+      if (!isLogin) {
+        router.push("/login");
+      }
       return;
     }
 
+    let isCancelled = false;
+
     const fetchUserInfo = async () => {
       try {
+        console.log("fetchUserInfo 시작");
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/user/mypage`,
           {
@@ -49,27 +61,40 @@ export default function MyPage() {
           }
         );
 
+        if (isCancelled) return; // 컴포넌트가 언마운트되었다면 중단
+
         if (response.ok) {
           const result = await response.json();
-          if (result.data) {
+          console.log("fetchUserInfo 성공:", result);
+          if (result.data && !isCancelled) {
             setLoginUser(result.data);
             setAccountInfo({
               bank: result.data.bank || "",
               account: result.data.account || "",
             });
+            hasInitialized.current = true; // 초기화 완료 표시
           }
         } else {
+          console.log("fetchUserInfo 실패, 로그인 페이지로 이동");
           router.push("/login");
         }
       } catch (error) {
         console.error("사용자 정보 조회 실패:", error);
-        router.push("/login");
+        if (!isCancelled) {
+          router.push("/login");
+        }
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchUserInfo();
+
+    return () => {
+      isCancelled = true;
+    };
   }, [isLogin, router]); // setLoginUser 제거
 
   const handleLogout = useCallback(() => {
@@ -126,7 +151,7 @@ export default function MyPage() {
     } finally {
       setIsSaving(false);
     }
-  }, [accountInfo, loginUser, setLoginUser]);
+  }, [accountInfo, loginUser]);
 
   if (isLoading) {
     return (

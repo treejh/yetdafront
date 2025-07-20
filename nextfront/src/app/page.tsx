@@ -85,6 +85,12 @@ export default function Home() {
                 >
                   마이페이지
                 </Link>
+                <Link
+                  href="/notification-test"
+                  className="text-purple-600 hover:text-purple-800 font-medium px-4 py-2 rounded-lg hover:bg-purple-50 transition-all duration-200"
+                >
+                  알림 테스트
+                </Link>
                 <button
                   onClick={handleLogout}
                   className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all duration-300 transform hover:scale-105 shadow-lg hover:shadow-xl text-sm font-medium"

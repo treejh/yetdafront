@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useCallback, useRef } from "react";
 import { useRouter } from "next/navigation";
 import { useGlobalLoginUser } from "@/stores/auth/loginMember";
 
@@ -8,10 +8,24 @@ export default function LoginSuccessPage() {
   const router = useRouter();
   const { isLogin, loginUser, setLoginUser } = useGlobalLoginUser();
   const [isLoading, setIsLoading] = useState(true);
+  const hasInitialized = useRef(false);
 
   useEffect(() => {
+    console.log("LoginSuccess useEffect 실행됨", {
+      hasInitialized: hasInitialized.current,
+    });
+
+    // 이미 초기화되었다면 실행하지 않음
+    if (hasInitialized.current) {
+      return;
+    }
+
+    hasInitialized.current = true;
+    let isCancelled = false;
+
     const fetchUserInfo = async () => {
       try {
+        console.log("fetchUserInfo 시작");
         const response = await fetch(
           `${process.env.NEXT_PUBLIC_API_BASE_URL}/api/v1/user/mypage`,
           {
@@ -20,25 +34,37 @@ export default function LoginSuccessPage() {
           }
         );
 
+        if (isCancelled) return; // 컴포넌트가 언마운트되었다면 중단
+
         if (response.ok) {
           const result = await response.json();
-          if (result.data) {
+          console.log("fetchUserInfo 성공:", result);
+          if (result.data && !isCancelled) {
             setLoginUser(result.data);
           }
         } else {
+          console.log("fetchUserInfo 실패, 로그인 페이지로 이동");
           // 로그인 정보가 없으면 로그인 페이지로 리다이렉트
           router.push("/login");
         }
       } catch (error) {
         console.error("사용자 정보 조회 실패:", error);
-        router.push("/login");
+        if (!isCancelled) {
+          router.push("/login");
+        }
       } finally {
-        setIsLoading(false);
+        if (!isCancelled) {
+          setIsLoading(false);
+        }
       }
     };
 
     fetchUserInfo();
-  }, [router, setLoginUser]);
+
+    return () => {
+      isCancelled = true;
+    };
+  }, []); // 의존성 배열을 비워서 한 번만 실행
 
   if (isLoading) {
     return (
@@ -160,7 +186,7 @@ export default function LoginSuccessPage() {
                 </span>
               </div>
 
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
                 <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-6 border border-blue-100">
                   <div className="flex items-center justify-center w-12 h-12 bg-blue-500 rounded-xl mb-4 mx-auto">
                     <svg
@@ -226,6 +252,33 @@ export default function LoginSuccessPage() {
                     홈으로 이동
                   </button>
                 </div>
+
+                <div className="bg-gradient-to-r from-orange-50 to-red-50 rounded-2xl p-6 border border-orange-100">
+                  <div className="flex items-center justify-center w-12 h-12 bg-orange-500 rounded-xl mb-4 mx-auto">
+                    <svg
+                      className="w-6 h-6 text-white"
+                      fill="none"
+                      stroke="currentColor"
+                      viewBox="0 0 24 24"
+                    >
+                      <path
+                        strokeLinecap="round"
+                        strokeLinejoin="round"
+                        strokeWidth={2}
+                        d="M15 17h5l-5 5v-5zM9 7H4l5-5v5zm6 10V7a1 1 0 00-1-1H5a1 1 0 00-1 1v10a1 1 0 001 1h9a1 1 0 001-1z"
+                      />
+                    </svg>
+                  </div>
+                  <h3 className="text-lg font-semibold text-gray-800 mb-2">
+                    알림 확인
+                  </h3>
+                  <p className="text-gray-600 text-sm mb-4">
+                    실시간 알림이 자동으로 연결됩니다
+                  </p>
+                  <div className="w-full bg-gradient-to-r from-orange-500 to-red-500 text-white py-3 px-4 rounded-xl text-center font-medium">
+                    SSE 연결 활성화됨
+                  </div>
+                </div>
               </div>
             </div>
           </div>
@@ -235,6 +288,9 @@ export default function LoginSuccessPage() {
         <div className="text-center">
           <p className="text-gray-500 text-sm">
             언제든지 마이페이지에서 개인정보를 수정하실 수 있습니다.
+          </p>
+          <p className="text-gray-500 text-sm mt-2">
+            실시간 알림 기능이 자동으로 활성화되었습니다.
           </p>
         </div>
       </div>

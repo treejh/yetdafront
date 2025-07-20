@@ -1,7 +1,10 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { LoginUserContext, useLoginUser } from "@/stores/auth/loginMember";
+import { useSSENotification } from "@/hooks/useSSENotification";
+import { NotificationToast } from "@/components/NotificationToast";
+import { SSEConnectionStatus } from "@/components/SSEConnectionStatus";
 
 export function ClientLayout({ children }: { children: React.ReactNode }) {
   const {
@@ -13,6 +16,49 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
     logout,
     logoutAndHome,
   } = useLoginUser();
+
+  const [notifications, setNotifications] = useState<
+    Array<{
+      id: string;
+      type: "connect" | "info" | "success" | "warning" | "error";
+      message: string;
+      timestamp: string;
+    }>
+  >([]);
+
+  // 로그인된 사용자에게만 SSE 연결
+  const {
+    isConnected,
+    connectionStatus,
+    lastMessage,
+    reconnect,
+    reconnectAttempts,
+    maxReconnectAttempts,
+  } = useSSENotification({
+    enabled: isLogin, // 로그인된 사용자에게만 SSE 연결
+    onMessage: (data) => {
+      console.log("전역 알림 수신:", data);
+      const newNotification = {
+        id: Date.now().toString(),
+        type: data.type as any,
+        message: data.message,
+        timestamp: data.timestamp,
+      };
+      setNotifications((prev) => [newNotification, ...prev].slice(0, 5));
+    },
+    onConnect: () => {
+      console.log("전역 SSE 연결 성공!");
+    },
+    onError: (error) => {
+      console.error("전역 SSE 연결 오류:", error);
+    },
+  });
+
+  const removeNotification = (id: string) => {
+    setNotifications((prev) =>
+      prev.filter((notification) => notification.id !== id)
+    );
+  };
 
   const LoginUserContextValue = {
     loginUser,
@@ -57,6 +103,22 @@ export function ClientLayout({ children }: { children: React.ReactNode }) {
 
   return (
     <LoginUserContext.Provider value={LoginUserContextValue}>
+      {/* 로그인된 사용자에게만 SSE 상태와 알림 표시 */}
+      {isLogin && (
+        <>
+          <SSEConnectionStatus
+            isConnected={isConnected}
+            connectionStatus={connectionStatus}
+            reconnectAttempts={reconnectAttempts}
+            maxReconnectAttempts={maxReconnectAttempts}
+            onReconnect={reconnect}
+          />
+          <NotificationToast
+            notifications={notifications}
+            onRemove={removeNotification}
+          />
+        </>
+      )}
       <main className="bg-[#F4F4F4] min-h-screen">{children}</main>
     </LoginUserContext.Provider>
   );
