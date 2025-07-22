@@ -130,7 +130,7 @@ export function useSSENotification({
       }
 
       const eventSource = new EventSourcePolyfill(
-        `http://localhost:8080/api/v1/alarm/stream`,
+        `${process.env.NEXT_PUBLIC_API_URL}/api/v1/alarm/stream`,
         {
           withCredentials: true, // 쿠키 포함
         }

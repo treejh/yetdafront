@@ -51,7 +51,7 @@ const useProjectDetail = (projectId: string) => {
         setError(null);
 
         const response = await fetch(
-          `https://yetda.kro.kr/api/v1/project/${projectId}`,
+          `${process.env.NEXT_PUBLIC_API_URL}/api/v1/project/${projectId}`,
           {
             method: "GET",
             credentials: "include",

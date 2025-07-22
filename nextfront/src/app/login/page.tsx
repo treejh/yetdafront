@@ -8,8 +8,7 @@ export default function LoginPage() {
   const router = useRouter();
   const { isLogin } = useGlobalLoginUser();
   // 카카오 로그인 URL
-  const socialLoginForKakaoUrl = `https://yetda.kro.kr/oauth2/authorization/kakao`;
-  // const socialLoginForKakaoUrl = `http://localhost:8080/oauth2/authorization/kakao`;
+  const socialLoginForKakaoUrl = `${process.env.NEXT_PUBLIC_API_URL}/oauth2/authorization/kakao`;
 
   // const redirectAfterLogin = "https://www.yetda.booktri.site/loginsuccess";
 
