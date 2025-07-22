@@ -9,6 +9,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "@tosspayments/tosspayments-sdk": "^2.3.5",
     "event-source-polyfill": "^1.0.31",
     "next": "15.4.1",
     "react": "19.1.0",
